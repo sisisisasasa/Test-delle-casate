@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test delle Casate - Calcolatore</title>
+<style>
+/* Stili CSS generali per il body e il contenitore */
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+padding: 20px;
+}
+
+.container {
+max-width: 1200px;
+margin: 0 auto;
+background: white;
+border-radius: 15px;
+box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+overflow: hidden;
+}
+
+/* Stili per l'intestazione */
+.header {
+background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+color: white;
+text-align: center;
+padding: 30px;
+}
+
+.header h1 {
+font-size: 2.5em;
+margin-bottom: 10px;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Stili per il contenuto principale (domande e risultati) */
+.content {
+display: grid;
+grid-template-columns: 2fr 1fr;
+gap: 30px;
+padding: 30px;
+}
+
+.questions-section {
+background: #f8f9fa;
+padding: 25px;
+border-radius: 10px;
+}
+
+.results-section {
+background: #e9ecef;
+padding: 25px;
+border-radius: 10px;
+}
+
+/* Stili per le singole domande */
+.question {
+margin-bottom: 25px;
+padding: 20px;
+background: white;
+border-radius: 8px;
+border-left: 4px solid #667eea;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.question.final-question {
+border-left: 4px solid #FFD700; /* Giallo oro per la domanda decisiva */
+background: linear-gradient(135deg, #FFF9E6, #FFFFFF);
+box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+position: relative;
+}
+
+.question.final-question::before {
+content: " ⚡ DOMANDA DECISIVA ⚡ ";
+position: absolute;
+top: -10px;
+left: 20px;
+background: linear-gradient(45deg, #FFD700, #FFA500); /* Giallo-arancio per il badge */
+color: white;
+padding: 5px 15px;
+border-radius: 15px;
+font-size: 0.8em;
+font-weight: bold;
+box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.question h3 {
+color: #333;
+margin-bottom: 15px;
+font-size: 1.1em;
+}
+
+.final-question h3 {
+margin-top: 15px;
+color: #B8860B; /* Bronzo scuro per il titolo domanda decisiva */
+font-weight: bold;
+}
+
+/* Stili per le opzioni di risposta */
+.options {
+display: grid;
+gap: 10px;
+}
+
+.option {
+display: flex;
+align-items: center;
+padding: 15px;
+background: #f8f9fa;
+border-radius: 8px;
+cursor: pointer;
+transition: all 0.3s ease;
+border: 2px solid transparent;
+font-size: 1.05em;
+}
+
+.option:hover {
+background: #e3f2fd;
+transform: translateX(8px);
+border-color: #667eea;
+box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.final-question .option:hover {
+background: #FFF9E6;
+border-color: #FFD700;
+box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.option input[type="radio"] {
+margin-right: 15px;
+transform: scale(1.3);
+accent-color: #667eea;
+}
+
+.final-question .option input[type="radio"] {
+accent-color: #FFD700;
+}
+
+/* Stili per i badge delle casate (non visibili, solo per logica interna) */
+.casa-badge {
+display: none;
+}
+
+/* Colori delle casate */
+.simondoro { background: #FFE5E5; color: #FF6B6B; } /* Rosso chiaro */
+.serpelelle { background: #E5F9F6; color: #4ECDC4; } /* Verde acqua chiaro */
+.corvolina { background: #E5F3FF; color: #45B7D1; } /* Azzurro chiaro */
+.mannorosso { background: #FFF0E5; color: #FFA07A; } /* Arancio chiaro */
+
+/* Stili per le card dei risultati */
+.results-card {
+background: white;
+padding: 20px;
+border-radius: 10px;
+margin-bottom: 20px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.results-card h3 {
+color: #333;
+margin-bottom: 15px;
+text-align: center;
+}
+
+.progress-info {
+text-align: center;
+padding: 20px;
+background: linear-gradient(135deg, #667eea20, #764ba240);
+border-radius: 10px;
+border: 2px solid #667eea;
+}
+
+.progress-text {
+font-size: 1.2em;
+font-weight: bold;
+color: #333;
+}
+
+.progress-subtitle {
+font-size: 0.9em;
+color: #666;
+margin-top: 5px;
+}
+
+.final-result {
+text-align: center;
+padding: 25px;
+border-radius: 12px;
+margin-top: 20px;
+font-size: 1.3em;
+font-weight: bold;
+box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+animation: pulse 2s infinite; /* Animazione pulsante per il risultato finale */
+}
+
+@keyframes pulse {
+0% { transform: scale(1); }
+50% { transform: scale(1.05); }
+100% { transform: scale(1); }
+}
+
+/* Stili per la barra di progresso */
+.progress-bar {
+width: 100%;
+height: 20px;
+background: #e9ecef;
+border-radius: 10px;
+overflow: hidden;
+margin-bottom: 20px;
+}
+
+.progress-fill {
+height: 100%;
+transition: width 0.5s ease;
+border-radius: 10px;
+}
+
+/* Stili per il pulsante di esportazione */
+.export-btn {
+background: linear-gradient(45deg, #667eea, #764ba2);
+color: white;
+border: none;
+padding: 15px 30px;
+border-radius: 8px;
+font-size: 1.1em;
+font-weight: bold;
+cursor: pointer;
+transition: all 0.3s ease;
+width: 100%;
+margin-top: 20px;
+}
+
+.export-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Stili per l'anteprima del punteggio */
+.score-preview {
+background: #f8f9fa;
+padding: 15px;
+border-radius: 8px;
+margin-top: 15px;
+border: 1px solid #dee2e6;
+}
+
+.score-preview h4 {
+color: #495057;
+margin-bottom: 10px;
+font-size: 1em;
+}
+
+.score-item {
+display: flex;
+justify-content: space-between;
+margin-bottom: 5px;
+font-size: 0.9em;
+}
+
+/* Stili per il testo di avviso */
+.warning-text {
+background: linear-gradient(135deg, #FFE4B5, #FFEFD5);
+color: #8B4513;
+padding: 15px;
+border-radius: 8px;
+margin-top: 15px;
+border-left: 4px solid #FFD700;
+font-style: italic;
+text-align: center;
+}
+
+/* Stili per la sezione introduttiva */
+.introduction-section {
+padding: 30px;
+text-align: center; /* Default center for overall section */
+}
+
+.introduction-section h2 {
+font-size: 2em;
+margin-bottom: 20px;
+color: #333;
+}
+
+.introduction-section p {
+font-size: 1.1em;
+line-height: 1.6;
+margin-bottom: 25px;
+color: #555;
+}
+
+/* Styles for "Regole della Competizione" section - Left aligned bullet points */
+.rules-list {
+list-style-position: inside; /* Bullet points inside the content flow */
+text-align: left; /* Align list items to the left */
+padding-left: 0; /* Remove default padding */
+}
+
+.rules-list li {
+margin-bottom: 10px;
+font-size: 1.1em;
+line-height: 1.6;
+color: #555;
+list-style-type: disc; /* Ensure disc bullet points */
+margin-left: 20px; /* Indent the list items */
+}
+
+/* Styles for house descriptions - Compact and center aligned */
+.house-description {
+text-align: center;
+margin: 0 auto 25px auto; /* Center block-level element and add margin-bottom */
+max-width: 600px; /* Limit width to make it more compact */
+line-height: 1.5; /* Adjust line height for compactness */
+}
+
+.house-description strong {
+display: block; /* Make the house name a block to ensure new line */
+margin-bottom: 5px; /* Space between house name and description */
+}
+
+/* Stili per i campi di input */
+.input-group {
+margin-bottom: 20px;
+}
+
+.input-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: bold;
+color: #333;
+}
+
+.input-group input[type="text"] {
+width: calc(100% - 20px);
+padding: 12px 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+font-size: 1em;
+}
+
+/* Stili per il pulsante di avvio test */
+.start-button {
+background: linear-gradient(45deg, #28a745, #218838);
+color: white;
+border: none;
+padding: 15px 30px;
+border-radius: 8px;
+font-size: 1.2em;
+font-weight: bold;
+cursor: pointer;
+transition: all 0.3s ease;
+margin-top: 20px;
+}
+
+.start-button:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Media queries per la responsività */
+@media (max-width: 768px) {
+.content {
+grid-template-columns: 1fr;
+}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1> 🏰 Test delle Casate 🏰 </h1>
+<p>Scopri a quale casata appartieni!</p>
+</div>
+
+<div id="introduction-page" class="introduction-section">
+    <h2>Benvenuti, streghe e maghi moderni, alla sfida più epica e sconsiderata dell’anno!</h2>
+    <p>La sera del <strong>9 Agosto 2025</strong> si terrà la prima gloriosa <strong>Coppa delle Case di Massa</strong>, tuttavia non dovrete mettere alla prova la vostra magia ma il vostro <strong>fegato, il vostro stomaco e la vostra tenacia</strong> (e anche un po’ di fiato).</p>
+    <p>Ogni grande impresa inizia però con una scelta. Ogni valoroso partecipante deve prima scoprire a quale Casa appartiene davvero. Che tu sia un babbano, un bevitore occasionale, un beone da osteria o un puccioso ornitorinco, <strong>Il Bicchiere Parlante</strong> deve esprimere il suo giudizio.</p>
+    <p>Le regali Case portano il nome dei loro fondatori e sono le seguenti:</p>
+
+    <div class="house-description">
+        <p>🦁 <strong>Simondoro</strong><br>
+        Coraggiosi, impulsivi e sempre i primi a urlare “Tocca!”.<br>
+        I Simondoro affrontano ogni drink come se fosse una sfida personale e hanno una naturale predisposizione a finire in foto compromettenti.<br>
+        La loro imbranatezza è seconda soltanto alla grinta con cui affrontano le sfide, soprattutto se si tratta di “quanto te la rischi?”.<br>
+        Motto: “Prima bevi, poi chiedi cos’è.”</p>
+    </div>
+    <div class="house-description">
+        <p>🐍 <strong>Serpelelle</strong><br>
+        Astuti, ambiziosi… e sobri mai.<br>
+        Mimetici come l’assenzio nel ghiaccio, i Serpelelle sono maestri della strategia alcolica.<br>
+        Non li vedi mai bere, ma il loro tasso alcolemico è inquietante.<br>
+        Osano dove gli altri esitano, non puntano a fare il botto: vogliono vincere. O almeno farlo sembrare.<br>
+        Astuti e un po’ stronzi, bevono con classe e tramano con ghiaccio nel cuore (e nel bicchiere).<br>
+        Ti sorridono mentre ti fregano il tavolo, l’ultimo Gin Tonic e la dignità.<br>
+        Motto: “Non siamo cattivi, siamo solo avanti di tre gin tonic.”</p>
+    </div>
+    <div class="house-description">
+        <p>🐗 <strong>Mannorosso</strong><br>
+        Non esiste il male e bene ma solo divertimento.<br>
+        I Mannorosso affrontano ogni sfida con grandi sorrisi e sguardi giudicanti, spesso schermati da lenti a specchio.<br>
+        Sono dei giocatori di squadra e sostengono i loro compagni ma anche i loro avversari, non importa chi vince la competizione, ma chi fa il botto piú grande!<br>
+        Motto: “lupo travestito da agnello travestito da tassosorosso”</p>
+    </div>
+    <div class="house-description">
+        <p>🦉 <strong>Corvolina</strong><br>Motto: “-”</p>
+    </div>
+
+    <h3>Regole della Competizione:</h3>
+    <ul class="rules-list">
+        <li>A partire dalle <strong>ore 20:00 in punto</strong>, ogni ora vi sposterete in un <strong>nuovo bar</strong>.</li>
+        <li>In <strong>ogni tappa</strong> dovrete boire <strong>un drink obbligatorio</strong>.</li>
+        <li>È severamente vietato bere acqua per tutta la durata della sfida. (Chi osa, venga punito con il disonore eterno.)</li>
+        <li>I fondatori possono scegliere una regola aggiuntiva ciascuno, valida esclusivamente per l’edizione in corso.</li>
+        <li>Il gioco termina indicativamente alle <strong>01:00</strong>, o quando solo un'anima valorosa rimane in piedi.</li>
+        <li>L’<strong>ultimo drink della serata</strong> sarà scelto da un <strong>passante ignaro</strong>: sarà il fato a decidere il vostro destino.</li>
+        <li><strong>Chi vomita, perde.</strong> Senza eccezioni. Anche se è solo “una cosa piccola”. Anche se è "in un angolo".</li>
+        <li>Alla fine della notte, chi per primo raggiunge il <strong>Castello Malaspina</strong> (in piedi, cosciente e sobrio quanto basta da reggersi) vince l’eterna gloria e (mi invento qualcosa).</li>
+    </ul>
+
+    <p>Preparate le vostre bacchette... o meglio, i vostri bicchieri. Questa notte non vince il più forte, ma il più resistente. E ricordate: <strong>non è Hogwarts… è molto, molto peggio.</strong></p>
+
+    <div class="input-group">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" placeholder="Inserisci il tuo nome">
+    </div>
+    <div class="input-group">
+        <label for="cognome">Cognome:</label>
+        <input type="text" id="cognome" placeholder="Inserisci il tuo cognome">
+    </div>
+
+    <button class="start-button" onclick="startTest()">Inizia il Test</button>
+</div>
+
+<div class="content" id="main-content" style="display: none;">
+<div class="questions-section">
+<h2>Rispondi alle domande:</h2>
+<div id="questions-container"></div>
+</div>
+
+<div class="results-section">
+<div class="results-card">
+<h3> 📊 Progresso</h3>
+<div class="progress-bar">
+<div class="progress-fill" id="progress-bar" style="width: 0%; background: #667eea;"></div>
+</div>
+<div class="progress-info">
+<div class="progress-text" id="progress-text">0 / 20 domande</div>
+<div class="progress-subtitle">Il destino della tua casata si decide qui...</div>
+</div>
+</div>
+
+<div class="results-card" id="score-preview-container" style="display: none;">
+<h3> 🎯 Punteggi Attuali</h3>
+<div class="score-preview" id="score-preview"></div>
+<div class="warning-text" id="warning-text" style="display: none;">
+⚠️ L'ultima domanda può cambiare completamente il risultato!
+</div>
+</div>
+
+<div class="results-card" id="final-result-container" style="display: none;">
+<h3 id="result-title"> 🎉 La Tua Casata</h3>
+<div id="final-result" class="final-result"></div>
+<div id="email-instruction" style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #555;">
+    Per inviare il tuo risultato, invia una mail con Nome, Cognome e la tua Casata a: <a href="mailto:simauf95@gmail.com">simauf95@gmail.com</a>
+</div>
+</div>
+
+<button class="export-btn" onclick="exportToCSV()" id="export-btn" style="display: none;"> 📄 Esporta Risultati</button>
+</div>
+</div>
+</div>
+<script>
+const questions = [
+{
+id: 1,
+text: "Quale aggettivo pensi ti rappresenti meglio?",
+options: [
+{ casa: "Simondoro", text: "Impulsivo" },
+{ casa: "Serpelelle", text: "Onestà" },
+{ casa: "Corvolina", text: "Overthinker" },
+{ casa: "Mannorosso", text: "Scettico" }
+]
+},
+{
+id: 2,
+text: "Cosa temi di più?",
+options: [
+{ casa: "Simondoro", text: "Rimanere deluso" },
+{ casa: "Serpelelle", text: "Che mi mentano" },
+{ casa: "Corvolina", text: "La superficialità" },
+{ casa: "Mannorosso", text: "La banalitá" }
+]
+},
+{
+id: 3,
+text: "Best posto aperitivo a Massa?",
+options: [
+{ casa: "Simondoro", text: "Bodeguita" },
+{ casa: "Serpelelle", text: "Omero" },
+{ casa: "Corvolina", text: "Opificio" },
+{ casa: "Mannorosso", text: "Daydrinking al parco dei ciliegi" }
+]
+},
+{
+id: 4,
+text: "Puoi eccellere in qualsiasi cosa, cosa scegli?",
+options: [
+{ casa: "Simondoro", text: "Cucina" },
+{ casa: "Serpelelle", text: "Fare investimenti" },
+{ casa: "Corvolina", text: "Acume" },
+{ casa: "Mannorosso", text: "Scrittura" }
+]
+},
+{
+id: 5,
+text: "Quale caratteristica apprezzi di più in un amico?",
+options: [
+{ casa: "Simondoro", text: "La spontaneità" },
+{ casa: "Serpelelle", text: "Sincerità" },
+{ casa: "Corvolina", text: "Premura" },
+{ casa: "Mannorosso", text: "Coraggio" }
+]
+},
+{
+id: 6,
+text: "Puoi regalare al tuo piccolo te di 8 anni qualcosa, che regalo gli fai?",
+options: [
+{ casa: "Simondoro", text: "La fabbrica dei mostri" },
+{ casa: "Serpelelle", text: "Gameboy" },
+{ casa: "Corvolina", text: "Libro illustrato" },
+{ casa: "Mannorosso", text: "Bitcoin" }
+]
+},
+{
+id: 7,
+text: "Sei bloccato in un supermercato e puoi passare l'intera giornata in un solo negozio, dove vai?",
+options: [
+{ casa: "Simondoro", text: "Negozio per la casa" },
+{ casa: "Serpelelle", text: "Libreria" },
+{ casa: "Corvolina", text: "l'altra libreria" },
+{ casa: "Mannorosso", text: "Negozio di usato" }
+]
+},
+{
+id: 8,
+text: "Personaggio fittizio/reale che vorresti come migliore amico",
+options: [
+{ casa: "Simondoro", text: "L'inventore dei taralli" },
+{ casa: "Serpelelle", text: "Olaf" },
+{ casa: "Corvolina", text: "Giuseppe Statti" },
+{ casa: "Mannorosso", text: "Marco Mosti" }
+]
+},
+{
+id: 9,
+text: "Ultima vacanza della tua vita cosa visiti o dove torni?",
+options: [
+{ casa: "Simondoro", text: "Nuova Zelanda" },
+{ casa: "Serpelelle", text: "Tanzania" },
+{ casa: "Corvolina", text: "Praga" },
+{ casa: "Mannorosso", text: "Le terme" }
+]
+},
+{
+id: 10,
+text: "Se tu fossi una merendina, a quale ti sentiresti più affine?",
+options: [
+{ casa: "Simondoro", text: "Girella" },
+{ casa: "Serpelelle", text: "Baiocchi" },
+{ casa: "Corvolina", text: "Kinder Brioss" },
+{ casa: "Mannorosso", text: "Kinder colazione piú" }
+]
+},
+{
+id: 11,
+text: "Tutte le pizzerie del mondo chiudono, tranne una. Quale lasci aperta?",
+options: [
+{ casa: "Simondoro", text: "Angela a Montignoso" },
+{ casa: "Serpelelle", text: "Vicotria" },
+{ casa: "Corvolina", text: "Apogeo" },
+{ casa: "Mannorosso", text: "Pieretti perchè se lo merita" }
+]
+},
+{
+id: 12,
+text: "Quale animale sconfiggerebbe un gorilla che sa la boxe?",
+options: [
+{ casa: "Simondoro", text: "una mantide religiosa alta 1.5 m" },
+{ casa: "Serpelelle", text: "Una Lelle a cui hanno rubato la Nutella" },
+{ casa: "Corvolina", text: "Un criceto rancoroso risorto" },
+{ casa: "Mannorosso", text: "Un tifoso della lazio armato dopo 2 birre e 3 amari" }
+]
+},
+{
+id: 13,
+text: "Puoi finalmente vendicarti su Alessandro Vietina senza ripercussioni, cosa fai?",
+options: [
+{ casa: "Simondoro", text: "Inzuppando qualcosa di disgustoso nella sua bevuta" },
+{ casa: "Serpelelle", text: "Gli faccio mangiare broccoli a vita" },
+{ casa: "Corvolina", text: "Lo chiamo e lo tengo al telefono sei ore" },
+{ casa: "Mannorosso", text: "Lo denuncio alla polizia postale" }
+]
+},
+{
+id: 14,
+text: "Cosa faresti tornare come era un tempo?",
+options: [
+{ casa: "Simondoro", text: "Il K2 a montignoso" },
+{ casa: "Serpelelle", text: "Il meteo" },
+{ casa: "Corvolina", text: "Ancora me stesso/a" },
+{ casa: "Mannorosso", text: "Me stesso/a" }
+]
+},
+{
+id: 15,
+text: "Dimmi perché Marco Mosti non dovrebbe essere in questo test",
+options: [
+{ casa: "Simondoro", text: "Boooonaa" },
+{ casa: "Serpelelle", text: "Top" },
+{ casa: "Corvolina", text: "Perché Marcone è ovunque anche senza esserci" },
+{ casa: "Mannorosso", text: "L'ho giá inserito inconsapevolmente" }
+]
+},
+{
+id: 16,
+text: "Dove vai a concludere la serata?",
+options: [
+{ casa: "Simondoro", text: "Bagno al mare" },
+{ casa: "Serpelelle", text: "Twin Peaks" },
+{ casa: "Corvolina", text: "In macchina a parlare" },
+{ casa: "Mannorosso", text: "Youtube" }
+]
+},
+{
+id: 17,
+text: "Cosa ti fa più ridere?",
+options: [
+{ casa: "Simondoro", text: "Il nonsense" },
+{ casa: "Serpelelle", text: "Simone Aufiero" },
+{ casa: "Corvolina", text: "Una barzelletta sugli scoiattoli" },
+{ casa: "Mannorosso", text: "Le persone quando si fanno male goffamente" }
+]
+},
+{
+id: 18,
+text: "Sei da solo con Giuseppe Statti iperattivo in una stanza vuota, quanto resisti prima di impazzire?",
+options: [
+{ casa: "Simondoro", text: "Mai, è il mio orsacchiotto calabro" },
+{ casa: "Serpelelle", text: "Finchè non chiede di fare ABC" },
+{ casa: "Corvolina", text: "Ci sono abituato/a, lo insulto ma non impazzisco" },
+{ casa: "Mannorosso", text: "17.56 supertagada" }
+]
+},
+{
+id: 19,
+text: "Sei da solo con Alessia di Palma che parlerà solo di musica ininterrottamente, quanto resisti?",
+options: [
+{ casa: "Simondoro", text: "Speri che prima o poi perda la voce" },
+{ casa: "Serpelelle", text: "Non ho problemi, perché mi isolo nel mondoLelle" },
+{ casa: "Corvolina", text: "Mi metto le airpods" },
+{ casa: "Mannorosso", text: "Non incorro piú in questo pericolo" }
+]
+},
+{
+id: 20,
+text: "Questo test fa schifo, in quale casa vuoi entrare?",
+isFinal: true,
+options: [
+{ casa: "Simondoro", text: "Simondoro" },
+{ casa: "Serpelelle", text: "Serpelelle" },
+{ casa: "Corvolina", text: "Corvolina" },
+{ casa: "Mannorosso", text: "Mannogiallorosso daje roma" }
+]
+}
+];
+const scores = {
+"Simondoro": 0,
+"Serpelelle": 0,
+"Corvolina": 0,
+"Mannorosso": 0
+};
+let answeredQuestions = 0;
+let finalQuestionAnswer = null;
+let userName = '';
+let userSurname = '';
+
+function shuffleArray(array) {
+const shuffled = [...array];
+for (let i = shuffled.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+}
+return shuffled;
+}
+
+function renderQuestions() {
+const container = document.getElementById('questions-container');
+container.innerHTML = '';
+questions.forEach(question => {
+const shuffledOptions = question.isFinal ? question.options : shuffleArray(question.options);
+
+const questionDiv = document.createElement('div');
+questionDiv.className = question.isFinal ? 'question final-question' : 'question';
+questionDiv.innerHTML = `
+<h3>${question.id}. ${question.text}</h3>
+<div class="options">
+${shuffledOptions.map((option, index) => `
+<label class="option" onclick="selectOption(${question.id}, '${option.casa}', ${index}, ${question.isFinal || false})">
+<input type="radio" name="question${question.id}" value="${option.casa}" data-index="${index}">
+${option.text}
+</label>
+`).join('')}
+</div>
+`;
+container.appendChild(questionDiv);
+});
+}
+
+function selectOption(questionId, casa, optionIndex, isFinal = false) {
+const previousAnswer = document.querySelector(`input[name="question${questionId}"]:checked`);
+if (previousAnswer && previousAnswer.value !== casa) {
+if (isFinal) {
+finalQuestionAnswer = casa;
+} else {
+scores[previousAnswer.value]--;
+}
+// Do not decrement answeredQuestions if changing answer, only if it's a new answer
+// or if a question was previously answered and now is being unanswered (which is not happening here)
+} else if (!previousAnswer) { // Only increment if it's the first time this question is answered
+answeredQuestions++;
+}
+
+if (isFinal) {
+finalQuestionAnswer = casa;
+} else {
+// If an answer was changed, decrement old score and increment new one
+if (previousAnswer) {
+scores[previousAnswer.value]--;
+}
+scores[casa]++;
+}
+
+updateResults();
+}
+
+function updateResults() {
+const progress = (answeredQuestions / questions.length) * 100;
+document.getElementById('progress-bar').style.width = progress + '%';
+document.getElementById('progress-text').textContent = `${answeredQuestions} / ${questions.length} domande`;
+if (answeredQuestions >= 10) { // Show score preview after 10 questions
+showScorePreview();
+} else {
+document.getElementById('score-preview-container').style.display = 'none';
+document.getElementById('warning-text').style.display = 'none';
+}
+
+if (answeredQuestions === questions.length) {
+showFinalResult();
+} else {
+document.getElementById('final-result-container').style.display = 'none';
+document.getElementById('export-btn').style.display = 'none';
+document.getElementById('email-instruction').style.display = 'none'; // Hide instruction if not final
+}
+}
+
+function showScorePreview() {
+const scoreContainer = document.getElementById('score-preview-container');
+const scorePreview = document.getElementById('score-preview');
+const warningText = document.getElementById('warning-text');
+
+scoreContainer.style.display = 'block';
+
+const sortedScores = Object.entries(scores).sort(([,a], [,b]) => b - a);
+
+scorePreview.innerHTML = `
+<h4> 📈 Classifica Parziale (Prime 19 domande):</h4>
+${sortedScores.map(([casa, score]) => `
+<div class="score-item">
+<span>${casa}</span>
+<span><strong>${score} punti</strong></span>
+</div>
+`).join('')}
+`;
+if (answeredQuestions === 19) {
+warningText.style.display = 'block';
+} else {
+warningText.style.display = 'none';
+}
+}
+
+function showFinalResult() {
+const resultContainer = document.getElementById('final-result-container');
+const resultDiv = document.getElementById('final-result');
+const titleDiv = document.getElementById('result-title');
+const exportBtn = document.getElementById('export-btn');
+const emailInstruction = document.getElementById('email-instruction');
+
+titleDiv.textContent = " 🏆 Risultato Finale";
+resultContainer.style.display = 'block';
+exportBtn.style.display = 'block';
+emailInstruction.style.display = 'block'; // Show email instruction
+
+const finalCasa = finalQuestionAnswer;
+const casateColors = {
+"Simondoro": "#FF6B6B",
+"Serpelelle": "#4ECDC4",
+"Corvolina": "#45B7D1",
+"Mannorosso": "#FFA07A"
+};
+
+const maxScore = Math.max(...Object.values(scores));
+const previousLeader = Object.entries(scores).find(([casa, score]) => score === maxScore)[0];
+
+resultDiv.className = `final-result ${finalCasa.toLowerCase()}`;
+resultDiv.style.background = `linear-gradient(135deg, ${casateColors[finalCasa]}20, ${casateColors[finalCasa]}40)`;
+resultDiv.style.border = `3px solid ${casateColors[finalCasa]}`;
+
+let resultText = `
+Appartieni ufficialmente alla casata<br>
+<strong>${finalCasa.toUpperCase()}</strong><br><br>
+`;
+
+if (finalCasa === previousLeader) {
+resultText += `<small style="color: #2E8B57; font-size: 0.9em;"> ✅ Confermato! Eri già in testa con ${maxScore} punti</small>`;
+} else {
+resultText += `<small style="color: #FF6347; font-size: 0.9em;"> 🔄 Colpo di scena!
+${previousLeader} era in testa con ${maxScore} punti,<br>ma hai scelto ${finalCasa}!</small>`;
+}
+
+resultDiv.innerHTML = resultText;
+
+setTimeout(() => {
+resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}, 300);
+}
+
+function exportToCSV() {
+let csvContent = "data:text/csv;charset=utf-8,";
+csvContent += "Informazione,Valore\n";
+
+if (userName) csvContent += `Nome,${userName}\n`;
+if (userSurname) csvContent += `Cognome,${userSurname}\n`;
+
+csvContent += `Casata Finale,${finalQuestionAnswer}\n`;
+csvContent += `Metodo Determinazione,Ultima Domanda Decisiva\n\n`;
+
+csvContent += "Punteggi Prime 19 Domande:\n";
+Object.entries(scores).forEach(([casa, score]) => {
+csvContent += `${casa},${score}\n`;
+});
+
+const maxScore = Math.max(...Object.values(scores));
+const previousLeader = Object.entries(scores).find(([casa, score]) => score === maxScore)[0];
+csvContent += `Leader Prime 19,${previousLeader}\n`;
+
+csvContent += `\nDomande Completate,${answeredQuestions}/${questions.length}\n`;
+
+if (finalQuestionAnswer === previousLeader) {
+csvContent += `Tipo Risultato,Confermato\n`;
+} else {
+csvContent += `Tipo Risultato,Colpo di Scena\n`;
+}
+const encodedUri = encodeURI(csvContent);
+const link = document.createElement("a");
+link.setAttribute("href", encodedUri);
+link.setAttribute("download", "risultati_test_casate_finale_decisiva.csv");
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+
+function showIntroduction() {
+document.getElementById('introduction-page').style.display = 'block';
+document.getElementById('main-content').style.display = 'none';
+document.getElementById('score-preview-container').style.display = 'none';
+document.getElementById('final-result-container').style.display = 'none';
+document.getElementById('export-btn').style.display = 'none';
+document.getElementById('email-instruction').style.display = 'none'; // Hide on introduction
+}
+
+function startTest() {
+    userName = document.getElementById('nome').value;
+    userSurname = document.getElementById('cognome').value;
+
+    document.getElementById('introduction-page').style.display = 'none';
+    document.getElementById('main-content').style.display = 'grid'; // Use 'grid' as it's the original display style
+    renderQuestions();
+    updateResults(); // Initialize progress bar
+}
+
+// Initial call to show the introduction page
+showIntroduction();
+</script>
+</body>
+</html>
